@@ -84,7 +84,7 @@ function AddSweetCard({ onClose }) {
 
   const [form, setForm] = useState({
     name: "",
-    image: "",
+    imageUrl: "",        // ✅ FIXED
     price: "",
     quantity: "",
     category: "",
@@ -132,7 +132,7 @@ function SweetForm({ form, onChange, onSave, onCancel }) {
           ["category", "Category"],
           ["price", "Price"],
           ["quantity", "Quantity"],
-          ["image", "Image URL"],
+          ["imageUrl", "Image URL"],   // ✅ FIXED
           ["description", "Description"],
         ].map(([key, label]) => (
           <div key={key} className="space-y-1 md:col-span-1">
@@ -177,7 +177,10 @@ function SweetCard({ sweet }) {
   const { updateSweet, deleteSweet } = useSweets();
   const [editing, setEditing] = useState(false);
 
-  const [form, setForm] = useState({ ...sweet });
+  const [form, setForm] = useState({
+    ...sweet,
+    imageUrl: sweet.imageUrl, // ✅ ENSURE CORRECT KEY
+  });
 
   function update(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -220,7 +223,7 @@ function SweetViewCard({ sweet, onEdit, onDelete }) {
   return (
     <Card>
       <img
-        src={sweet.image || "/placeholder.svg"}
+        src={sweet.imageUrl || "/placeholder.svg"}   // ✅ FIXED
         alt={sweet.name}
         className="aspect-square object-cover"
       />
@@ -237,7 +240,9 @@ function SweetViewCard({ sweet, onEdit, onDelete }) {
 
       <CardContent>
         <p className="text-sm text-muted-foreground">{sweet.description}</p>
-        <p className="mt-2 text-xl font-bold text-pink-600">₹{sweet.price}</p>
+        <p className="mt-2 text-xl font-bold text-pink-600">
+          ₹{sweet.price}
+        </p>
       </CardContent>
 
       <CardFooter className="gap-2">

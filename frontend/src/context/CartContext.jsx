@@ -1,56 +1,86 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
+import { purchaseSweetApi } from "../api/sweets.api";
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
 
-  useEffect(() => {
-    const storedCart = localStorage.getItem("sweetshop_cart");
-    if (storedCart) {
-      setCart(JSON.parse(storedCart));
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("sweetshop_cart", JSON.stringify(cart));
-  }, [cart]);
-
+  // ✅ ADD TO CART
   const addToCart = (sweet) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.id === sweet.id);
       if (existing) {
         return prev.map((i) =>
           i.id === sweet.id
-            ? { ...i, cartQuantity: i.cartQuantity + 1 }
+            ? { ...i, quantity: i.quantity + 1 }
             : i
         );
       }
-      return [...prev, { ...sweet, cartQuantity: 1 }];
+      return [
+        ...prev,
+        {
+          id: sweet.id,
+          name: sweet.name,
+          price: sweet.price,
+          imageUrl: sweet.imageUrl,
+          quantity: 1,
+        },
+      ];
     });
   };
 
+  // ✅ UPDATE CART QUANTITY (+ / -)
+  const updateCartQuantity = (id, delta) => {
+    setCart((prev) =>
+      prev
+        .map((item) =>
+          item.id === id
+            ? { ...item, quantity: item.quantity + delta }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  // ✅ REMOVE ITEM
   const removeFromCart = (id) => {
     setCart((prev) => prev.filter((i) => i.id !== id));
   };
 
+  // ✅ CLEAR CART
   const clearCart = () => setCart([]);
 
-  const getCartCount = () =>
-    cart.reduce((total, item) => total + item.cartQuantity, 0);
+  // ✅ PLACE ORDER (DB quantity reduction)
+  const placeOrder = async () => {
+    for (const item of cart) {
+      for (let i = 0; i < item.quantity; i++) {
+        await purchaseSweetApi(item.id);
+      }
+    }
+    clearCart();
+  };
 
-  const getCartTotal = () =>
-    cart.reduce((total, item) => total + item.price * item.cartQuantity, 0);
+  // ✅ DERIVED VALUES
+  const getCartCount = () =>
+    cart.reduce((sum, i) => sum + i.quantity, 0);
+
+  const totalPrice = useMemo(
+    () => cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
+    [cart]
+  );
 
   return (
     <CartContext.Provider
       value={{
         cart,
         addToCart,
+        updateCartQuantity,
         removeFromCart,
         clearCart,
+        placeOrder,
         getCartCount,
-        getCartTotal,
+        totalPrice,
       }}
     >
       {children}
@@ -58,10 +88,4 @@ export function CartProvider({ children }) {
   );
 }
 
-export function useCart() {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error("useCart must be used inside CartProvider");
-  }
-  return context;
-}
+export const useCart = () => useContext(CartContext);

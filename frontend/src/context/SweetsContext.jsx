@@ -8,6 +8,15 @@ import {
 
 const SweetsContext = createContext(null);
 
+const normalizeSweetPayload = (sweet) => ({
+  name: sweet.name?.trim() || "",
+  category: sweet.category?.trim() || "",
+  price: Number(sweet.price),
+  quantity: Number(sweet.quantity),
+  imageUrl: sweet.imageUrl?.trim() || "",
+  description: sweet.description?.trim() || "",
+});
+
 export function SweetsProvider({ children }) {
   const [sweets, setSweets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,44 +26,33 @@ export function SweetsProvider({ children }) {
   }, []);
 
   const loadSweets = async () => {
-    try {
-      const res = await getSweets();
-      setSweets(res.data);
-    } catch (err) {
-      console.error("Failed to load sweets:", err);
-    } finally {
-      setLoading(false);
-    }
+    const res = await getSweets();
+    setSweets(res.data);
+    setLoading(false);
   };
 
   const addSweet = async (sweet) => {
-    await addSweetApi(sweet);
-    loadSweets();
+    await addSweetApi(normalizeSweetPayload(sweet));
+    await loadSweets();
   };
 
-  const updateSweet = async (id, data) => {
-    await updateSweetApi(id, data);
-    loadSweets();
+  const updateSweet = async (id, sweet) => {
+    await updateSweetApi(id, normalizeSweetPayload(sweet));
+    await loadSweets();
   };
 
   const deleteSweet = async (id) => {
     await deleteSweetApi(id);
-    loadSweets();
+    await loadSweets();
   };
 
   return (
     <SweetsContext.Provider
-      value={{ sweets, loading, addSweet, updateSweet, deleteSweet }}
+      value={{ sweets, loading, loadSweets, addSweet, updateSweet, deleteSweet }}
     >
       {children}
     </SweetsContext.Provider>
   );
 }
 
-export const useSweets = () => {
-  const ctx = useContext(SweetsContext);
-  if (!ctx) {
-    throw new Error("useSweets must be used inside SweetsProvider");
-  }
-  return ctx;
-};
+export const useSweets = () => useContext(SweetsContext);

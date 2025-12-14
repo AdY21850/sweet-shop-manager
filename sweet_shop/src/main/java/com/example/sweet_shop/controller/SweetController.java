@@ -48,4 +48,19 @@ public class SweetController {
     ) {
         return sweetService.search(name, category, minPrice, maxPrice);
     }
+    // ADMIN only - update sweet
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}")
+    public Sweet updateSweet(
+            @PathVariable Long id,
+            @Valid @RequestBody AddSweetRequest request
+    ) {
+        return sweetService.updateSweet(id, request);
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public void deleteSweet(@PathVariable Long id) {
+        sweetService.deleteSweet(id);
+    }
+
 }
