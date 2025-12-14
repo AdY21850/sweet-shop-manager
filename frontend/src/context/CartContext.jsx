@@ -17,6 +17,7 @@ export function CartProvider({ children }) {
             : i
         );
       }
+
       return [
         ...prev,
         {
@@ -30,7 +31,7 @@ export function CartProvider({ children }) {
     });
   };
 
-  // ✅ UPDATE CART QUANTITY (+ / -)
+  // ✅ UPDATE QUANTITY (+ / -)
   const updateCartQuantity = (id, delta) => {
     setCart((prev) =>
       prev
@@ -45,13 +46,13 @@ export function CartProvider({ children }) {
 
   // ✅ REMOVE ITEM
   const removeFromCart = (id) => {
-    setCart((prev) => prev.filter((i) => i.id !== id));
+    setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
   // ✅ CLEAR CART
   const clearCart = () => setCart([]);
 
-  // ✅ PLACE ORDER (DB quantity reduction)
+  // ✅ PLACE ORDER (🔥 DB quantity reduced)
   const placeOrder = async () => {
     for (const item of cart) {
       for (let i = 0; i < item.quantity; i++) {
@@ -63,10 +64,14 @@ export function CartProvider({ children }) {
 
   // ✅ DERIVED VALUES
   const getCartCount = () =>
-    cart.reduce((sum, i) => sum + i.quantity, 0);
+    cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const totalPrice = useMemo(
-    () => cart.reduce((sum, i) => sum + i.price * i.quantity, 0),
+    () =>
+      cart.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      ),
     [cart]
   );
 

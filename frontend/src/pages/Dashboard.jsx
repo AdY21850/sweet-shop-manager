@@ -189,13 +189,13 @@ function ProductCard({ sweet, onAddToCart }) {
 
       <CardFooter>
         <Button
-          disabled={sweet.quantity === 0}    // ✅ DB based
-          onClick={() => onAddToCart(sweet)} // ✅ Cart only
-          className="w-full bg-gradient-to-r from-pink-500 to-purple-600"
-        >
-          <ShoppingCart className="mr-2 h-4 w-4" />
-          Add to Cart
-        </Button>
+  disabled={sweet.quantity === 0}        // 🔥 DB quantity check
+  onClick={() => onAddToCart(sweet)}     // 🔥 cart only
+  className="w-full bg-gradient-to-r from-pink-500 to-purple-600"
+>
+  <ShoppingCart className="mr-2 h-4 w-4" />
+  Add to Cart
+</Button>
       </CardFooter>
     </Card>
   );

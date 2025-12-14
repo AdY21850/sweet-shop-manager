@@ -1,6 +1,8 @@
-import { useCart } from "../context/CartContext";
+import AuthGuard from "../components/AuthGuard";
 import Navbar from "../components/Navbar";
 import AnimatedFooter from "../components/AnimatedFooter";
+
+import { useCart } from "../context/CartContext";
 import { Button } from "../components/ui/button";
 
 export default function Checkout() {
@@ -12,97 +14,112 @@ export default function Checkout() {
     totalPrice,
   } = useCart();
 
+  async function handleCheckout() {
+    if (cart.length === 0) return;
+
+    await placeOrder();
+    alert("✅ Order placed successfully!");
+  }
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <AuthGuard>
+      <div className="min-h-screen bg-background">
+        <Navbar />
 
-      <div className="max-w-4xl mx-auto p-6">
-        <h2 className="text-3xl font-bold mb-6">Your Cart</h2>
+        <div className="container mx-auto px-4 py-8">
+          <h2 className="text-3xl font-bold mb-6">Checkout</h2>
 
-        {cart.length === 0 ? (
-          <p>Your cart is empty.</p>
-        ) : (
-          <>
-            {cart.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between border-b py-4"
-              >
-                {/* Image + Name */}
-                <div className="flex items-center gap-4">
-                  <img
-                    src={item.imageUrl || "/placeholder.svg"}
-                    alt={item.name}
-                    className="w-20 h-20 rounded object-cover"
-                  />
-                  <div>
-                    <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-muted-foreground">
-                      ₹{item.price} each
+          {cart.length === 0 ? (
+            <p>Your cart is empty.</p>
+          ) : (
+            <>
+              {cart.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between border rounded-lg p-4 mb-4"
+                >
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={item.imageUrl || "/placeholder.svg"}
+                      alt={item.name}
+                      className="h-20 w-20 object-cover rounded"
+                    />
+                    <div>
+                      <p className="font-semibold">{item.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        ₹{item.price} each
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        updateCartQuantity(item.id, -1)
+                      }
+                    >
+                      −
+                    </Button>
+
+                    <span className="w-6 text-center">
+                      {item.quantity}
+                    </span>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() =>
+                        updateCartQuantity(item.id, 1)
+                      }
+                    >
+                      +
+                    </Button>
+                  </div>
+
+                  <div className="text-right">
+                    <p className="font-semibold">
+                      ₹{item.price * item.quantity}
                     </p>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="mt-2"
+                      onClick={() =>
+                        removeFromCart(item.id)
+                      }
+                    >
+                      Remove
+                    </Button>
                   </div>
                 </div>
+              ))}
 
-                {/* Quantity Controls */}
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    onClick={() => updateCartQuantity(item.id, -1)}
-                  >
-                    -
-                  </Button>
-                  <span className="font-semibold">{item.quantity}</span>
-                  <Button
-                    variant="outline"
-                    onClick={() => updateCartQuantity(item.id, 1)}
-                  >
-                    +
-                  </Button>
+              <div className="mt-6 border-t pt-4">
+                <div className="flex justify-between mb-2">
+                  <span>Subtotal</span>
+                  <span>₹{totalPrice}</span>
                 </div>
 
-                {/* Item Total */}
-                <div className="text-right">
-                  <p className="font-bold">
-                    ₹{item.price * item.quantity}
-                  </p>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => removeFromCart(item.id)}
-                  >
-                    Remove
-                  </Button>
+                <div className="flex justify-between text-lg font-bold">
+                  <span>Total</span>
+                  <span>₹{totalPrice}</span>
                 </div>
+
+                <Button
+                  onClick={handleCheckout}
+                  className="mt-6 w-full bg-gradient-to-r from-pink-500 to-purple-600"
+                >
+                  Place Order
+                </Button>
               </div>
-            ))}
+            </>
+          )}
+        </div>
 
-            {/* Order Summary */}
-            <div className="mt-8 border-t pt-6">
-              <h3 className="text-xl font-bold mb-4">Order Summary</h3>
-
-              <div className="flex justify-between mb-2">
-                <span>Subtotal</span>
-                <span>₹{totalPrice}</span>
-              </div>
-
-              <div className="flex justify-between text-lg font-bold">
-                <span>Total</span>
-                <span>₹{totalPrice}</span>
-              </div>
-
-              <Button
-                onClick={placeOrder}
-                className="mt-6 w-full bg-gradient-to-r from-pink-500 to-purple-600"
-              >
-                Place Order
-              </Button>
-            </div>
-          </>
-        )}
+        <AnimatedFooter />
       </div>
-
-      <AnimatedFooter />
-    </div>
+    </AuthGuard>
   );
 }
