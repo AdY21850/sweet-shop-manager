@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "https://sweet-shop-manager-five.vercel.app", allowCredentials = "true")
+@CrossOrigin(
+        origins = "https://sweet-shop-manager-five.vercel.app",
+        allowCredentials = "true"
+)
 public class AuthController {
 
     private final UserService userService;
@@ -39,7 +42,7 @@ public class AuthController {
         }
     }
 
-    // ✅ LOGIN
+    // ✅ LOGIN (🔥 FIXED ROLE HANDLING)
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
@@ -56,9 +59,15 @@ public class AuthController {
 
         User user = userService.getByEmail(request.getEmail());
 
+        // 🔥 IMPORTANT FIX:
+        // Convert ROLE_ADMIN → ADMIN before putting into JWT
+        String roleForJwt = user.getRole()
+                .name()
+                .replace("ROLE_", "");
+
         String token = jwtUtil.generateToken(
                 user.getEmail(),
-                user.getRole().name()
+                roleForJwt
         );
 
         return ResponseEntity.ok(
