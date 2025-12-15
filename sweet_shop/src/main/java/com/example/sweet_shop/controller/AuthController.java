@@ -60,7 +60,7 @@ public class AuthController {
         User user = userService.getByEmail(request.getEmail());
 
         // 🔥 IMPORTANT FIX:
-        // Convert ROLE_ADMIN → ADMIN before putting into JWT
+       
         String roleForJwt = user.getRole()
                 .name()
                 .replace("ROLE_", "");
