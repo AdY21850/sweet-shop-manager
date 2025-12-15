@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api", // ONLY ONCE
+  baseURL: "https://sweet-shop-manager-production.up.railway.app", // ONLY ONCE
   withCredentials: true,
 });
 
