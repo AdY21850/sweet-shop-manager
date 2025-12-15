@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = "https://sweet-shop-manager-five.vercel.app", allowCredentials = "true")
 public class AuthController {
 
     private final UserService userService;
