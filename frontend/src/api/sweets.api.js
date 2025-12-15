@@ -1,15 +1,17 @@
 import api from "./axios";
 
-export const getSweets = () => api.get("/sweets");
+// 🔓 Public - list sweets
+export const getSweets = () => api.get("/api/sweets");
 
-export const addSweetApi = (data) => api.post("/sweets", data);
+// 🔒 ADMIN only
+export const addSweetApi = (data) => api.post("/api/sweets", data);
 
 export const updateSweetApi = (id, data) =>
-  api.put(`/sweets/${id}`, data);
+  api.put(`/api/sweets/${id}`, data);
 
 export const deleteSweetApi = (id) =>
-  api.delete(`/sweets/${id}`);
+  api.delete(`/api/sweets/${id}`);
 
-// 🔥 called ONLY on order placement
+// 🔥 USER - purchase sweet
 export const purchaseSweetApi = (id) =>
-  api.put(`/sweets/${id}/purchase`);
+  api.put(`/api/sweets/${id}/purchase`);
