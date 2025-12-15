@@ -1,3 +1,5 @@
+visit app on :- https://sweet-shop-manager-chi.vercel.app
+
 # 🍬 Sweet Shop Management System
 
 A **full-stack Sweet Shop application** built with **Spring Boot (Backend)** and **React (Frontend)** that supports **user authentication, role-based access (Admin/User), sweet management, and purchasing**.
