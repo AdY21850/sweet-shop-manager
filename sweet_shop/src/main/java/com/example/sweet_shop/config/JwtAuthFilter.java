@@ -23,15 +23,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-    // 🔥 Skip JWT for public endpoints
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
 
         String path = request.getServletPath();
+        String method = request.getMethod();
 
-        return request.getMethod().equals("OPTIONS")
-                || path.startsWith("/api/auth")
-                || path.startsWith("/api/sweets");
+        // 🔥 Allow CORS preflight
+        if ("OPTIONS".equals(method)) {
+            return true;
+        }
+
+        // 🔓 Auth endpoints
+        if (path.startsWith("/api/auth")) {
+            return true;
+        }
+
+        // 🔓 Public READ-only sweets
+        return "GET".equals(method) && path.startsWith("/api/sweets");
     }
 
     @Override
@@ -63,8 +72,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            } catch (Exception e) {
-                // Invalid token → authentication not set
+            } catch (Exception ignored) {
+                // Invalid token → request will be rejected later
             }
         }
 

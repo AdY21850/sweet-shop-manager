@@ -60,7 +60,7 @@ public class AuthController {
         User user = userService.getByEmail(request.getEmail());
 
         // 🔥 IMPORTANT FIX:
-       
+
         String roleForJwt = user.getRole()
                 .name()
                 .replace("ROLE_", "");
