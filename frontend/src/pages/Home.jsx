@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Candy, ShoppingBag, Sparkles, Heart } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { useEffect, useState } from "react";
 
 /**
  * Home Page
@@ -19,35 +20,52 @@ export default function Home() {
 
 /* ---------------- Hero Section ---------------- */
 
+
+
+
+/* ---------------- Hero Section ---------------- */
+
 function HeroSection() {
+  const [hero, setHero] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/hero/active")
+      .then((res) => res.json())
+      .then((data) => setHero(data))
+      .catch((err) => console.error("Hero fetch failed", err));
+  }, []);
+
+  if (!hero) return null; // loading safe guard
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-pink-100 via-purple-100 to-pink-200 dark:from-pink-950 dark:via-purple-950 dark:to-pink-900">
-      <BackgroundDecorations />
+    <section
+      className="relative overflow-hidden bg-cover bg-center"
+      style={{ backgroundImage: `url(${hero.imageUrl})` }}
+    >
+      <div className="bg-black/50">
+        <div className="container mx-auto px-4 py-20 md:py-32 text-center text-white">
+          <Candy className="mx-auto mb-6 h-20 w-20 text-pink-300" />
 
-      <div className="container relative mx-auto px-4 py-20 md:py-32">
-        <div className="mx-auto max-w-3xl text-center">
-          <Candy className="mx-auto mb-6 h-20 w-20 animate-bounce-slow text-pink-500" />
-
-          <h1 className="mb-6 text-5xl font-bold leading-tight md:text-7xl">
-            <span className="bg-gradient-to-r from-pink-500 via-purple-500 to-pink-600 bg-clip-text text-transparent">
-              Welcome to Sweet Shop
-            </span>
+          <h1 className="mb-6 text-5xl font-bold md:text-7xl">
+            {hero.title}
           </h1>
 
-          <p className="mb-8 text-lg text-muted-foreground md:text-xl">
-            Indulge in the finest selection of sweets and candies from around the
-            world. Every bite is a celebration of flavor and joy!
+          <p className="mb-8 text-lg md:text-xl">
+            {hero.description}
           </p>
 
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <PrimaryCTA />
-            <SecondaryCTA />
-          </div>
+          <Button size="lg" asChild>
+            <Link to="/register">
+              <ShoppingBag className="mr-2 h-5 w-5" />
+              Start Shopping
+            </Link>
+          </Button>
         </div>
       </div>
     </section>
   );
 }
+
 
 function BackgroundDecorations() {
   return (
