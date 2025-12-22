@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Search, Filter, X, ShoppingCart } from "lucide-react";
 
 import AuthGuard from "../components/AuthGuard";
@@ -41,11 +41,44 @@ export default function Dashboard() {
   );
 }
 
+/* ================= Dashboard Hero ================= */
+
+function DashboardHero() {
+  const [hero, setHero] = useState(null);
+
+  useEffect(() => {
+    fetch("http://localhost:8080/api/hero/active")
+      .then((res) => res.json())
+      .then(setHero)
+      .catch(() => {});
+  }, []);
+
+  if (!hero) return null;
+
+  return (
+    <section
+      className="mb-10 rounded-3xl overflow-hidden bg-cover bg-center"
+      style={{ backgroundImage: `url(${hero.imageUrl})` }}
+    >
+      <div className="bg-black/50">
+        <div className="px-8 py-16 max-w-3xl text-white">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+            {hero.title}
+          </h1>
+          <p className="text-lg text-white/90">
+            {hero.description}
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ================= Main ================= */
 
 function DashboardContent() {
-  const { sweets } = useSweets();     // ✅ DB data
-  const { addToCart } = useCart();    // ✅ Cart only
+  const { sweets } = useSweets();
+  const { addToCart } = useCart();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -71,7 +104,8 @@ function DashboardContent() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <Header />
+      {/* 🔥 HERO SECTION */}
+      <DashboardHero />
 
       <SearchAndFilters
         searchQuery={searchQuery}
@@ -151,7 +185,7 @@ function ProductCard({ sweet, onAddToCart }) {
     <Card className="overflow-hidden transition-all hover:shadow-lg">
       <div className="aspect-square overflow-hidden bg-gradient-to-br from-pink-50 to-purple-50">
         <img
-          src={sweet.imageUrl || "/placeholder.svg"}   // ✅ FIXED
+          src={sweet.imageUrl || "/placeholder.svg"}
           alt={sweet.name}
           className="h-full w-full object-cover transition-transform hover:scale-110"
         />
@@ -167,9 +201,7 @@ function ProductCard({ sweet, onAddToCart }) {
               {sweet.category}
             </CardDescription>
           </div>
-          <Badge
-            variant={sweet.quantity > 0 ? "default" : "secondary"}
-          >
+          <Badge variant={sweet.quantity > 0 ? "default" : "secondary"}>
             {sweet.quantity > 0 ? "In Stock" : "Out of Stock"}
           </Badge>
         </div>
@@ -189,21 +221,20 @@ function ProductCard({ sweet, onAddToCart }) {
 
       <CardFooter>
         <Button
-  disabled={sweet.quantity === 0}        // 🔥 DB quantity check
-  onClick={() => onAddToCart(sweet)}     // 🔥 cart only
-  className="w-full bg-gradient-to-r from-pink-500 to-purple-600"
->
-  <ShoppingCart className="mr-2 h-4 w-4" />
-  Add to Cart
-</Button>
+          disabled={sweet.quantity === 0}
+          onClick={() => onAddToCart(sweet)}
+          className="w-full bg-gradient-to-r from-pink-500 to-purple-600"
+        >
+          <ShoppingCart className="mr-2 h-4 w-4" />
+          Add to Cart
+        </Button>
       </CardFooter>
     </Card>
   );
 }
 
-/* ================= Helpers (UNCHANGED) ================= */
+/* ================= Helpers ================= */
 
-function Header() { return null }
 function SearchAndFilters() { return null }
 function ResultsCount() { return null }
 function EmptyState() { return null }
