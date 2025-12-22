@@ -1,4 +1,4 @@
-console.log("DASHBOARD FILE LOADED");
+
 
 import { useState, useEffect, useMemo } from "react";
 import { Search, ShoppingCart } from "lucide-react";
@@ -71,7 +71,7 @@ function DashboardHero() {
     </section>
   );
 }
-
+console.log("DASHBOARD FILE LOADED");
 /* ================= Main Content ================= */
 
 function DashboardContent() {
