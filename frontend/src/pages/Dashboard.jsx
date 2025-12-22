@@ -1,3 +1,5 @@
+console.log("DASHBOARD FILE LOADED");
+
 import { useState, useEffect, useMemo } from "react";
 import { Search, ShoppingCart } from "lucide-react";
 import axios from "axios";
