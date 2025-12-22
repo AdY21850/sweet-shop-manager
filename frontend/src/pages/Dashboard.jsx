@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Search, Filter, X, ShoppingCart } from "lucide-react";
+import axios from "axios";
 
 import AuthGuard from "../components/AuthGuard";
 import Navbar from "../components/Navbar";
@@ -41,34 +42,35 @@ export default function Dashboard() {
   );
 }
 
-/* ================= Dashboard Hero ================= */
+/* ================= Hero ================= */
 
 function DashboardHero() {
   const [hero, setHero] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/hero/active")
-      .then((res) => res.json())
-      .then(setHero)
+    axios
+      .get(`${process.env.REACT_APP_API_BASE_URL}/api/hero/active`)
+      .then((res) => setHero(res.data))
       .catch(() => {});
   }, []);
-
-  if (!hero) return null;
 
   return (
     <section
       className="mb-10 rounded-3xl overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: `url(${hero.imageUrl})` }}
+      style={{
+        backgroundImage: hero?.imageUrl
+          ? `url(${hero.imageUrl})`
+          : "linear-gradient(to right, #ec4899, #8b5cf6)",
+      }}
     >
-      <div className="bg-black/50">
-        <div className="px-8 py-16 max-w-3xl text-white">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            {hero.title}
-          </h1>
-          <p className="text-lg text-white/90">
-            {hero.description}
-          </p>
-        </div>
+      <div className="bg-black/50 px-8 py-16 text-white">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          {hero?.title || "Welcome to Sweet Shop"}
+        </h1>
+        <p className="text-lg">
+          {hero?.description ||
+            "Discover delicious sweets curated just for you 🍬"}
+        </p>
       </div>
     </section>
   );
@@ -103,32 +105,127 @@ function DashboardContent() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      {/* 🔥 HERO SECTION */}
+    <>
       <DashboardHero />
 
-      <SearchAndFilters
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        showFilters={showFilters}
-        setShowFilters={setShowFilters}
-        categories={categories}
-        selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
-        priceRange={priceRange}
-        setPriceRange={setPriceRange}
-        hasActiveFilters={hasActiveFilters}
-        clearFilters={clearFilters}
-      />
+      <main className="container mx-auto px-4 py-8">
+        <SearchAndFilters
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          showFilters={showFilters}
+          setShowFilters={setShowFilters}
+          categories={categories}
+          selectedCategory={selectedCategory}
+          setSelectedCategory={setSelectedCategory}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          hasActiveFilters={hasActiveFilters}
+          clearFilters={clearFilters}
+        />
 
-      <ResultsCount count={filteredSweets.length} />
+        <ResultsCount count={filteredSweets.length} />
 
-      <ProductsGrid sweets={filteredSweets} onAddToCart={addToCart} />
+        <ProductsGrid sweets={filteredSweets} onAddToCart={addToCart} />
 
-      {filteredSweets.length === 0 && (
-        <EmptyState onClearFilters={clearFilters} />
+        {filteredSweets.length === 0 && (
+          <EmptyState onClearFilters={clearFilters} />
+        )}
+      </main>
+    </>
+  );
+}
+
+/* ================= Search & Filters ================= */
+
+function SearchAndFilters({
+  searchQuery,
+  setSearchQuery,
+  showFilters,
+  setShowFilters,
+  categories,
+  selectedCategory,
+  setSelectedCategory,
+  priceRange,
+  setPriceRange,
+  hasActiveFilters,
+  clearFilters,
+}) {
+  return (
+    <div className="mb-8 space-y-4">
+      {/* Search bar */}
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search sweets..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+
+        <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+          <Filter className="mr-2 h-4 w-4" />
+          Filters
+        </Button>
+
+        {hasActiveFilters && (
+          <Button variant="ghost" onClick={clearFilters}>
+            <X className="mr-2 h-4 w-4" />
+            Clear
+          </Button>
+        )}
+      </div>
+
+      {/* Filters */}
+      {showFilters && (
+        <div className="grid gap-4 md:grid-cols-2">
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger>
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={priceRange} onValueChange={setPriceRange}>
+            <SelectTrigger>
+              <SelectValue placeholder="Price Range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Prices</SelectItem>
+              <SelectItem value="under-500">Under ₹500</SelectItem>
+              <SelectItem value="500-1000">₹500 – ₹1000</SelectItem>
+              <SelectItem value="over-1000">Above ₹1000</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       )}
-    </main>
+    </div>
+  );
+}
+
+/* ================= Helpers ================= */
+
+function ResultsCount({ count }) {
+  return (
+    <p className="mb-4 text-sm text-muted-foreground">
+      Showing {count} items
+    </p>
+  );
+}
+
+function EmptyState({ onClearFilters }) {
+  return (
+    <div className="mt-12 text-center">
+      <p className="mb-4 text-lg">No sweets found 🍬</p>
+      <Button onClick={onClearFilters}>Clear Filters</Button>
+    </div>
   );
 }
 
@@ -136,8 +233,8 @@ function DashboardContent() {
 
 function useCategories(sweets) {
   return useMemo(() => {
-    const categories = new Set(sweets.map((s) => s.category));
-    return ["all", ...Array.from(categories)];
+    const set = new Set(sweets.map((s) => s.category));
+    return ["all", ...Array.from(set)];
   }, [sweets]);
 }
 
@@ -194,9 +291,7 @@ function ProductCard({ sweet, onAddToCart }) {
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="line-clamp-1">
-              {sweet.name}
-            </CardTitle>
+            <CardTitle className="line-clamp-1">{sweet.name}</CardTitle>
             <CardDescription className="mt-1">
               {sweet.category}
             </CardDescription>
@@ -232,9 +327,3 @@ function ProductCard({ sweet, onAddToCart }) {
     </Card>
   );
 }
-
-/* ================= Helpers ================= */
-
-function SearchAndFilters() { return null }
-function ResultsCount() { return null }
-function EmptyState() { return null }
