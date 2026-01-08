@@ -94,18 +94,20 @@ function DashboardContent({ searchQuery }) {
     );
   }, [sweets, searchQuery]);
 
+  // ✅ hero visible only when search is empty
+  const showHero = searchQuery.trim() === "";
+
   return (
     <>
-      {/* HERO */}
-      <DashboardHero />
+      {/* HERO — only when no search text */}
+      {showHero && <DashboardHero />}
 
       <main className="container mx-auto px-4 py-6">
-        {/* ❌ SEARCH BAR REMOVED FROM HERE */}
-
         {/* PRODUCTS */}
         <ProductsGrid sweets={filteredSweets} onAddToCart={addToCart} />
 
-        {filteredSweets.length === 0 && (
+        {/* ❌ No results message — only when searching */}
+        {!showHero && filteredSweets.length === 0 && (
           <p className="mt-12 text-center text-muted-foreground">
             No sweets found 🍬
           </p>
