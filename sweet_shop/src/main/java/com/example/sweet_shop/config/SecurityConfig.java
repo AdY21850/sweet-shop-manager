@@ -63,7 +63,7 @@ public class SecurityConfig {
 
         // 🔥 Allow Vercel production + preview URLs
         config.setAllowedOriginPatterns(List.of(
-                "https://sweet-shop-manager-five.vercel.app",
+                "https://sweet-shop-manager-chi.vercel.app",
                 "https://*.vercel.app"
         ));
 
