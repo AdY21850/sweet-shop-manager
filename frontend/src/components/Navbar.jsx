@@ -40,7 +40,7 @@ export default function Navbar({ searchQuery, setSearchQuery }) {
             placeholder="Search sweets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64"
+            className="w-96"
           />
         </div>
 
