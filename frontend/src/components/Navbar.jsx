@@ -35,7 +35,7 @@ export default function Navbar({ searchQuery, setSearchQuery }) {
 
         {/* 🔍 SEARCH BAR (ONLY ADDITION) */}
         <div className="flex items-center gap-2 mx-6">
-          <Search className="h-4 w-6 text-muted-foreground" />
+          <Search className="h-10 w-4 text-muted-foreground" />
           <Input
             placeholder="Search sweets..."
             value={searchQuery}
