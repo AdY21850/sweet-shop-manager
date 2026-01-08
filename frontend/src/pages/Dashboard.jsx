@@ -3,6 +3,7 @@ import { Search, ShoppingCart } from "lucide-react";
 import axios from "axios";
 
 import AuthGuard from "../components/AuthGuard";
+import Navbar from "../components/Navbar";
 import AnimatedFooter from "../components/AnimatedFooter";
 
 import { useSweets } from "../context/SweetsContext";
@@ -23,12 +24,13 @@ import { Badge } from "../components/ui/badge";
 /* ================= Dashboard ================= */
 
 export default function Dashboard() {
-  // 🔍 Search state at top level
+  // 🔹 moved here so Navbar can use it
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <AuthGuard>
       <div className="min-h-screen bg-background">
+        {/* 🔍 Search bar now in Navbar */}
         <Navbar
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
@@ -39,31 +41,6 @@ export default function Dashboard() {
         <AnimatedFooter />
       </div>
     </AuthGuard>
-  );
-}
-
-/* ================= NAVBAR (with Search) ================= */
-
-function Navbar({ searchQuery, setSearchQuery }) {
-  return (
-    <nav className="sticky top-0 z-50 bg-background border-b">
-      <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        
-        {/* LOGO */}
-        <h1 className="text-xl font-bold">Sweet Shop</h1>
-
-        {/* 🔍 SEARCH BAR */}
-        <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search sweets..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-64"
-          />
-        </div>
-      </div>
-    </nav>
   );
 }
 
@@ -110,7 +87,7 @@ function DashboardContent({ searchQuery }) {
   const { sweets } = useSweets();
   const { addToCart } = useCart();
 
-  // 🔥 SEARCH FILTER
+  // 🔥 SAME SEARCH LOGIC — UNCHANGED
   const filteredSweets = useMemo(() => {
     return sweets.filter((sweet) =>
       sweet.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -123,6 +100,8 @@ function DashboardContent({ searchQuery }) {
       <DashboardHero />
 
       <main className="container mx-auto px-4 py-6">
+        {/* ❌ SEARCH BAR REMOVED FROM HERE */}
+
         {/* PRODUCTS */}
         <ProductsGrid sweets={filteredSweets} onAddToCart={addToCart} />
 
