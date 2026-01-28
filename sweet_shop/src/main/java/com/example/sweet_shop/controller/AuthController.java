@@ -41,6 +41,22 @@ public class AuthController {
                     .body(ex.getMessage());
         }
     }
+    //google Login
+    @PostMapping("/google-login")
+    public LoginResponse googleLogin(@RequestBody String token) {
+
+        User user = userService.loginWithGoogle(token);
+
+        String jwt = jwtUtil.generateToken(user);
+
+        return new LoginResponse(
+                true,
+                "Google login successful",
+                jwt,
+                user
+        );
+    }
+
 
     // ✅ LOGIN (🔥 FIXED ROLE HANDLING)
     @PostMapping("/login")
