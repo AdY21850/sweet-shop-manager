@@ -5,6 +5,7 @@ import com.example.sweet_shop.model.*;
 import com.example.sweet_shop.repository.*;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -45,7 +46,7 @@ public class OrderService {
         Order order = new Order();
         order.setUser(user);
 
-        double total = 0;
+        BigDecimal total = BigDecimal.ZERO;
 
         for (CartItem cartItem : cart.getItems()) {
 
@@ -65,11 +66,15 @@ public class OrderService {
             orderItem.setOrder(order);
             orderItem.setSweet(sweet);
             orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPrice(sweet.getPrice());
+            orderItem.setPrice(BigDecimal.valueOf(sweet.getPrice()));
 
             order.getItems().add(orderItem);
 
-            total += sweet.getPrice() * cartItem.getQuantity();
+            // total += sweet.getPrice() * quantity
+            BigDecimal itemTotal = BigDecimal.valueOf(sweet.getPrice())
+                    .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+
+            total = total.add(itemTotal);
         }
 
         order.setTotalPrice(total);

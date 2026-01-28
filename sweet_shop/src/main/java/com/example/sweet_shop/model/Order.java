@@ -28,7 +28,7 @@ public class Order {
     private List<OrderItem> items = new ArrayList<>();
 
     @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal totalPrice = BigDecimal.ZERO; // ✅ FIXED
+    private BigDecimal totalPrice = BigDecimal.ZERO;
 
     private String status = "PENDING";
 
