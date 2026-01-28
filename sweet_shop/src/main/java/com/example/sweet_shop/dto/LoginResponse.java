@@ -8,6 +8,16 @@ import lombok.Getter;
 @AllArgsConstructor
 public class LoginResponse {
 
-    private String token;
-    private User user;
+    private boolean success; // ✅ new (status flag)
+    private String message;   // ✅ new (readable response)
+    private String token;     // ✅ existing (unchanged)
+    private User user;        // ✅ existing (unchanged)
+
+    // ✅ BACKWARD-COMPATIBLE CONSTRUCTOR (DOES NOT BREAK OLD FLOW)
+    public LoginResponse(String token, User user) {
+        this.success = true;
+        this.message = "Login successful";
+        this.token = token;
+        this.user = user;
+    }
 }

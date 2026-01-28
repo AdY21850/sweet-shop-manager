@@ -21,8 +21,9 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @JsonIgnore   // 🔥 never expose password
-    @Column(nullable = false)
+    // ✅ Allow null for Google users
+    @JsonIgnore
+    @Column(nullable = true)
     private String password;
 
     @Enumerated(EnumType.STRING)

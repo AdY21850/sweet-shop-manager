@@ -10,6 +10,7 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +22,19 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    // ✅ Load Google Client ID from application.properties
+    @Value("${google.client.id}")
+    private String googleClientId;
+
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ✅ EXISTING REGISTER FLOW — UNCHANGED
+    // ==========================
+    // ✅ REGISTER — USER ONLY
+    // ==========================
     public User register(RegisterRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
@@ -43,29 +50,39 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // ✅ EXISTING FETCH USER — UNCHANGED
+    // ==========================
+    // ✅ GET USER BY EMAIL
+    // ==========================
     public User getByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
     }
 
-    // ✅ EXISTING LOGIN — UNCHANGED
+    // ==========================
+    // ✅ EMAIL + PASSWORD LOGIN
+    // ==========================
     public boolean login(String email, String rawPassword) {
         User user = getByEmail(email);
+
+        // ✅ Prevent login if password is null (Google-only users)
+        if (user.getPassword() == null) {
+            return false;
+        }
+
         return passwordEncoder.matches(rawPassword, user.getPassword());
     }
 
-    // ==================================================
-    // ✅ NEW: GOOGLE LOGIN — SAFE, NON-DESTRUCTIVE
-    // ==================================================
-
+    // ==========================
+    // ✅ GOOGLE LOGIN — SAFE & NON-DESTRUCTIVE
+    // ==========================
     public User loginWithGoogle(String googleToken) {
 
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(),
                     new JacksonFactory()
-            ).setAudience(Collections.singletonList("YOUR_GOOGLE_CLIENT_ID"))
+            )
+                    .setAudience(Collections.singletonList(googleClientId)) // ✅ Config-based
                     .build();
 
             GoogleIdToken idToken = verifier.verify(googleToken);
@@ -79,19 +96,19 @@ public class UserService {
             String email = payload.getEmail();
             String name = (String) payload.get("name");
 
-            // ✅ If user already exists → RETURN AS IS (DO NOT MODIFY)
+            // ✅ If user already exists → DO NOT MODIFY
             User existingUser = userRepository.findByEmail(email).orElse(null);
 
             if (existingUser != null) {
                 return existingUser;
             }
 
-            // ✅ If new Google user → create USER ONLY
+            // ✅ New Google user → create USER only
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setUsername(name);
-            newUser.setPassword(null); // No password for Google users
-            newUser.setRole(Role.USER); // Force USER role
+            newUser.setUsername(name != null ? name : "Google User");
+            newUser.setPassword(null); // Google users have no password
+            newUser.setRole(Role.USER); // Force USER role only
 
             return userRepository.save(newUser);
 

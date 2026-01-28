@@ -28,43 +28,74 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
+                // =====================
+                // ✅ CORS CONFIG
+                // =====================
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // =====================
+                // ✅ DISABLE CSRF (JWT)
+                // =====================
                 .csrf(csrf -> csrf.disable())
 
+                // =====================
+                // ✅ STATELESS SESSION
+                // =====================
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                // =====================
+                // ✅ AUTHORIZATION RULES
+                // =====================
                 .authorizeHttpRequests(auth -> auth
+
                         // 🔥 CORS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 🔓 Public endpoints
+                        // 🔓 PUBLIC AUTH ROUTES
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // 🔓 PUBLIC SWEETS FETCH
                         .requestMatchers(HttpMethod.GET, "/api/sweets/**").permitAll()
 
-                        // 🔒 Everything else requires JWT
+                        // 🔒 ADMIN ONLY ROUTES (SAFE ADDITION)
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
+                        // 🔒 USER + ADMIN ROUTES
+                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
+
+                        // 🔒 EVERYTHING ELSE REQUIRES AUTH
                         .anyRequest().authenticated()
                 )
 
-                // 🔥 JWT filter
+                // =====================
+                // ✅ JWT FILTER
+                // =====================
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
+                // =====================
+                // ✅ DISABLE FORM LOGIN
+                // =====================
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable());
 
         return http.build();
     }
 
+    // =====================
+    // ✅ CORS CONFIGURATION
+    // =====================
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        // 🔥 Allow Vercel production + preview URLs
+        // 🔥 Allow production + preview + local dev
         config.setAllowedOriginPatterns(List.of(
                 "https://sweet-shop-manager-rho.vercel.app",
-                "https://*.vercel.app"
+                "https://*.vercel.app",
+                "http://localhost:*"
         ));
 
         config.setAllowedMethods(List.of(

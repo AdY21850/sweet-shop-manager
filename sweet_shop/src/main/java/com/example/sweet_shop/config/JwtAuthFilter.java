@@ -34,12 +34,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return true;
         }
 
-        // 🔓 Auth endpoints
+        // 🔓 Public auth routes
         if (path.startsWith("/api/auth")) {
             return true;
         }
 
-        // 🔓 Public READ-only sweets
+        // 🔓 Public sweets GET
         return "GET".equals(method) && path.startsWith("/api/sweets");
     }
 
@@ -56,14 +56,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
 
             try {
+                // ✅ Validate token before parsing
+                if (!jwtUtil.isTokenValid(token)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String email = jwtUtil.extractEmail(token);
                 String role = jwtUtil.extractRole(token);
+
+                // ✅ Normalize role (avoid ROLE_ROLE_ADMIN bugs)
+                String normalizedRole = role.startsWith("ROLE_")
+                        ? role
+                        : "ROLE_" + role;
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 email,
                                 null,
-                                Collections.singleton(() -> "ROLE_" + role)
+                                Collections.singleton(() -> normalizedRole)
                         );
 
                 authentication.setDetails(
@@ -73,7 +84,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
             } catch (Exception ignored) {
-                // Invalid token → request will be rejected later
+                // Token invalid → leave context empty (Spring will block request)
             }
         }
 

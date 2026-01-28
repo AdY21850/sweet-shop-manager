@@ -27,40 +27,63 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
-    // ✅ REGISTER
+    // ==========================
+    // ✅ REGISTER — USER ONLY
+    // ==========================
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
             userService.register(request);
+
             return ResponseEntity
                     .status(HttpStatus.CREATED)
                     .body("User registered successfully");
+
         } catch (IllegalArgumentException ex) {
+
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(ex.getMessage());
         }
     }
-    //google Login
+
+    // ==========================
+    // ✅ GOOGLE LOGIN
+    // ==========================
     @PostMapping("/google-login")
-    public LoginResponse googleLogin(@RequestBody String token) {
+    public ResponseEntity<LoginResponse> googleLogin(@RequestBody String token) {
 
-        User user = userService.loginWithGoogle(token);
+        try {
+            User user = userService.loginWithGoogle(token);
 
-        String jwt = jwtUtil.generateToken(user);
+            String jwt = jwtUtil.generateToken(user);
 
-        return new LoginResponse(
-                true,
-                "Google login successful",
-                jwt,
-                user
-        );
+            return ResponseEntity.ok(
+                    new LoginResponse(
+                            true,
+                            "Google login successful",
+                            jwt,
+                            user
+                    )
+            );
+
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(new LoginResponse(
+                            false,
+                            "Google login failed",
+                            null,
+                            null
+                    ));
+        }
     }
 
-
-    // ✅ LOGIN (🔥 FIXED ROLE HANDLING)
+    // ==========================
+    // ✅ EMAIL + PASSWORD LOGIN
+    // ==========================
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
 
         boolean success = userService.login(
                 request.getEmail(),
@@ -70,13 +93,17 @@ public class AuthController {
         if (!success) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid credentials");
+                    .body(new LoginResponse(
+                            false,
+                            "Invalid credentials",
+                            null,
+                            null
+                    ));
         }
 
         User user = userService.getByEmail(request.getEmail());
 
-        // 🔥 IMPORTANT FIX:
-
+        // ✅ Role normalized for JWT
         String roleForJwt = user.getRole()
                 .name()
                 .replace("ROLE_", "");
@@ -86,8 +113,14 @@ public class AuthController {
                 roleForJwt
         );
 
+        // ✅ Backward-compatible response
         return ResponseEntity.ok(
-                new LoginResponse(token, user)
+                new LoginResponse(
+                        true,
+                        "Login successful",
+                        token,
+                        user
+                )
         );
     }
 }
