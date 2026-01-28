@@ -12,4 +12,7 @@ public interface SweetRepository extends JpaRepository<Sweet, Long> {
     List<Sweet> findByCategoryIgnoreCase(String category);
 
     List<Sweet> findByPriceBetween(Double min, Double max);
+
+    // ✅ Optional safe helper
+    boolean existsById(Long id);
 }

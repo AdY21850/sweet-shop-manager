@@ -1,22 +1,28 @@
 package com.example.sweet_shop.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
+@Table(name = "hero_sections")
+@Getter
+@Setter
 public class HeroSection {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String title;
 
-    private String description;
+    @Column(columnDefinition = "TEXT")
+    private String subtitle;
 
+    @Column(name = "image_url", nullable = false)
     private String imageUrl;
 
-    private boolean active;
+    @Column(nullable = false)
+    private boolean active = true;
 }

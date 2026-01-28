@@ -29,4 +29,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
+
+    // ✅ NEW: Profile Image URL (Safe Extension)
+    @Column(name = "profile_image_url")
+    private String profileImageUrl;
 }

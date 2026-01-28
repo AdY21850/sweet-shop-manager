@@ -19,26 +19,27 @@ public class SweetController {
         this.sweetService = sweetService;
     }
 
-    // Public - list all sweets
+    // ✅ Public - list all sweets
     @GetMapping
     public List<Sweet> getAllSweets() {
         return sweetService.getAllSweets();
     }
 
-    // ADMIN only - add sweet
+    // ✅ ADMIN only - add sweet
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public Sweet addSweet(@Valid @RequestBody AddSweetRequest request) {
         return sweetService.addSweet(request);
     }
 
-    // USER - purchase sweet
+    // ✅ USER only - purchase sweet (Admin shouldn't buy)
+    @PreAuthorize("hasRole('USER')")
     @PutMapping("/{id}/purchase")
     public Sweet purchaseSweet(@PathVariable Long id) {
         return sweetService.purchaseSweet(id);
     }
 
-    // Search with multiple filters
+    // ✅ Search with filters
     @GetMapping("/search")
     public List<Sweet> searchSweets(
             @RequestParam(required = false) String name,
@@ -48,7 +49,8 @@ public class SweetController {
     ) {
         return sweetService.search(name, category, minPrice, maxPrice);
     }
-    // ADMIN only - update sweet
+
+    // ✅ ADMIN only - update sweet
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public Sweet updateSweet(
@@ -57,10 +59,11 @@ public class SweetController {
     ) {
         return sweetService.updateSweet(id, request);
     }
+
+    // ✅ ADMIN only - delete sweet
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteSweet(@PathVariable Long id) {
         sweetService.deleteSweet(id);
     }
-
 }
