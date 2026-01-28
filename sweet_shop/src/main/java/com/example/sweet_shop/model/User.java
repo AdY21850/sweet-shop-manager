@@ -2,13 +2,17 @@ package com.example.sweet_shop.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name = "users")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "users")
 public class User {
 
     @Id
@@ -16,21 +20,32 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
-    private String username;
+    private String fullName;
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    // ✅ Allow null for Google users
-    @JsonIgnore
-    @Column(nullable = true)
+    @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;
+    private String phone;
 
-    // ✅ NEW: Profile Image URL (Safe Extension)
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Cart cart;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Order> orders = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Review> reviews = new ArrayList<>();
+
     @Column(name = "profile_image_url")
     private String profileImageUrl;
 }

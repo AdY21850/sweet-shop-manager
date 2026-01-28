@@ -1,13 +1,15 @@
 package com.example.sweet_shop.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "sweet")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Sweet {
 
     @Id
@@ -17,16 +19,9 @@ public class Sweet {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String category;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 
-    @Column(nullable = false)
-    private double price;
-
-    @Column(nullable = false)
-    private int quantity;
-
-    @Column(name = "image_url")
     private String imageUrl;
 
     @Column(columnDefinition = "TEXT")

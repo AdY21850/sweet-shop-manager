@@ -1,38 +1,36 @@
 package com.example.sweet_shop.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orders")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "orders")
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Order belongs to a user
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Order items
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
-    @Column(nullable = false)
-    private double totalPrice;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalAmount;
 
-    @Column(nullable = false)
-    private String status = "PLACED"; // PLACED, CANCELLED, COMPLETED
+    private String status = "PENDING";
 
-    @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

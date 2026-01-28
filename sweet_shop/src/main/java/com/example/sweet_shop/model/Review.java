@@ -1,39 +1,33 @@
 package com.example.sweet_shop.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "reviews", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "sweet_id"})
-})
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Reviewer
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    // Sweet being reviewed
-    @ManyToOne
-    @JoinColumn(name = "sweet_id", nullable = false)
-    private Sweet sweet;
-
-    @Column(nullable = false)
-    private int rating; // 1–5 stars
+    private int rating;
 
     @Column(columnDefinition = "TEXT")
     private String comment;
 
-    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "sweet_id")
+    private Sweet sweet;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 }

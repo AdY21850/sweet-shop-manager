@@ -1,32 +1,32 @@
 package com.example.sweet_shop.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 @Entity
-@Table(name = "order_items")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Link to Order
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    // Link to Sweet
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "sweet_id", nullable = false)
     private Sweet sweet;
 
     @Column(nullable = false)
     private int quantity;
 
-    @Column(nullable = false)
-    private double price; // price per unit at purchase time
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal price;
 }
