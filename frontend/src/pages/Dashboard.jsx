@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Search, ShoppingCart } from "lucide-react";
+import {  ShoppingCart } from "lucide-react";
 import axios from "axios";
 
 import AuthGuard from "../components/AuthGuard";
@@ -10,7 +10,7 @@ import { useSweets } from "../context/SweetsContext";
 import { useCart } from "../context/CartContext";
 
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
+// import { Input } from "../components/ui/input";
 import {
   Card,
   CardContent,
