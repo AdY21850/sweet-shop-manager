@@ -11,8 +11,6 @@ import com.example.sweet_shop.repository.SweetRepository;
 import com.example.sweet_shop.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class CartService {
 

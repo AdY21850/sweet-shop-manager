@@ -75,6 +75,7 @@ public class UserService {
     // ==========================
     // ✅ GOOGLE LOGIN — SAFE & NON-DESTRUCTIVE
     // ==========================
+    @SuppressWarnings("deprecation")
     public User loginWithGoogle(String googleToken) {
 
         try {
