@@ -19,6 +19,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String username; // restored
+
     @Column(nullable = false)
     private String fullName;
 
@@ -28,7 +30,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String phone;
 
     @Enumerated(EnumType.STRING)
