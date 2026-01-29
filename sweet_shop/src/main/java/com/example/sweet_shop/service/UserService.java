@@ -22,7 +22,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // ✅ Load Google Client ID from application.properties
     @Value("${google.client.id}")
     private String googleClientId;
 
@@ -33,7 +32,7 @@ public class UserService {
     }
 
     // ==========================
-    // ✅ REGISTER — USER ONLY
+    // ✅ EMAIL REGISTER
     // ==========================
     public User register(RegisterRequest request) {
 
@@ -43,15 +42,16 @@ public class UserService {
 
         User user = new User();
         user.setUsername(request.getUsername());
+        user.setFullName(request.getUsername()); // FIXED fullName DB bug
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.USER); // USER by default
+        user.setRole(Role.USER);
 
         return userRepository.save(user);
     }
 
     // ==========================
-    // ✅ GET USER BY EMAIL
+    // ✅ GET USER
     // ==========================
     public User getByEmail(String email) {
         return userRepository.findByEmail(email)
@@ -59,31 +59,27 @@ public class UserService {
     }
 
     // ==========================
-    // ✅ EMAIL + PASSWORD LOGIN
+    // ✅ EMAIL LOGIN
     // ==========================
     public boolean login(String email, String rawPassword) {
         User user = getByEmail(email);
 
-        // ✅ Prevent login if password is null (Google-only users)
-        if (user.getPassword() == null) {
-            return false;
-        }
+        if (user.getPassword() == null) return false;
 
         return passwordEncoder.matches(rawPassword, user.getPassword());
     }
 
     // ==========================
-    // ✅ GOOGLE LOGIN — SAFE & NON-DESTRUCTIVE
+    // ✅ GOOGLE LOGIN / REGISTER ENGINE
     // ==========================
-    @SuppressWarnings("deprecation")
-    public User loginWithGoogle(String googleToken) {
+    public User loginWithGoogle(String googleToken, boolean forceRegister) {
 
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
                     new NetHttpTransport(),
                     new JacksonFactory()
             )
-                    .setAudience(Collections.singletonList(googleClientId)) // ✅ Config-based
+                    .setAudience(Collections.singletonList(googleClientId))
                     .build();
 
             GoogleIdToken idToken = verifier.verify(googleToken);
@@ -97,24 +93,35 @@ public class UserService {
             String email = payload.getEmail();
             String name = (String) payload.get("name");
 
-            // ✅ If user already exists → DO NOT MODIFY
             User existingUser = userRepository.findByEmail(email).orElse(null);
 
+            // ❌ If registering but user exists
+            if (forceRegister && existingUser != null) {
+                throw new IllegalArgumentException("User already exists. Please login.");
+            }
+
+            // ✅ If logging in but user missing
+            if (!forceRegister && existingUser == null) {
+                throw new IllegalArgumentException("User not registered. Please sign up.");
+            }
+
+            // ✅ Existing user
             if (existingUser != null) {
                 return existingUser;
             }
 
-            // ✅ New Google user → create USER only
+            // ✅ Create Google User
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setUsername(name != null ? name : "Google User");
-            newUser.setPassword(null); // Google users have no password
-            newUser.setRole(Role.USER); // Force USER role only
+            newUser.setFullName(name != null ? name : "Google User");
+            newUser.setPassword(null);
+            newUser.setRole(Role.USER);
 
             return userRepository.save(newUser);
 
         } catch (Exception e) {
-            throw new IllegalArgumentException("Google authentication failed");
+            throw new IllegalArgumentException("Google authentication failed: " + e.getMessage());
         }
     }
 }

@@ -1,12 +1,3 @@
-package com.example.sweet_shop.model;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
-import lombok.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
@@ -19,15 +10,15 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username; // restored
+    private String username;
 
-    @Column(nullable = false)
-    private String fullName;
+    @Column(nullable = false, name = "full_name")
+    private String fullName; // REQUIRED by DB
 
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = true) // Google users allowed
     private String password;
 
     private String phone;

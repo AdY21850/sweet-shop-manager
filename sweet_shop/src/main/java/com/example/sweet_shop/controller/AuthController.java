@@ -28,45 +28,56 @@ public class AuthController {
     }
 
     // ==========================
-    // ✅ REGISTER — USER ONLY
+    // ✅ EMAIL REGISTER
     // ==========================
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> register(@Valid @RequestBody RegisterRequest request) {
         try {
             User user = userService.register(request);
-
             String token = jwtUtil.generateToken(user);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(
-                    new LoginResponse(
-                            true,
-                            "User registered successfully",
-                            token,
-                            user
-                    )
+                    new LoginResponse(true, "User registered successfully", token, user)
             );
 
         } catch (IllegalArgumentException ex) {
-
             return ResponseEntity.status(HttpStatus.CONFLICT).body(
-                    new LoginResponse(
-                            false,
-                            ex.getMessage(),
-                            null,
-                            null
-                    )
+                    new LoginResponse(false, ex.getMessage(), null, null)
             );
 
         } catch (Exception ex) {
             ex.printStackTrace();
-
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new LoginResponse(
-                            false,
-                            "Server error during registration",
-                            null,
-                            null
-                    )
+                    new LoginResponse(false, "Server error during registration", null, null)
+            );
+        }
+    }
+
+    // ==========================
+    // ✅ EMAIL LOGIN
+    // ==========================
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        try {
+            boolean success = userService.login(request.getEmail(), request.getPassword());
+
+            if (!success) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        new LoginResponse(false, "Invalid credentials", null, null)
+                );
+            }
+
+            User user = userService.getByEmail(request.getEmail());
+            String token = jwtUtil.generateToken(user);
+
+            return ResponseEntity.ok(
+                    new LoginResponse(true, "Login successful", token, user)
+            );
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new LoginResponse(false, "Login failed due to server error", null, null)
             );
         }
     }
@@ -76,88 +87,39 @@ public class AuthController {
     // ==========================
     @PostMapping("/google-login")
     public ResponseEntity<LoginResponse> googleLogin(@RequestBody String token) {
-
         try {
-            User user = userService.loginWithGoogle(token);
-
+            User user = userService.loginWithGoogle(token, false);
             String jwt = jwtUtil.generateToken(user);
 
             return ResponseEntity.ok(
-                    new LoginResponse(
-                            true,
-                            "Google login successful",
-                            jwt,
-                            user
-                    )
+                    new LoginResponse(true, "Google login successful", jwt, user)
             );
 
         } catch (Exception e) {
-            e.printStackTrace(); // ✅ LOG BACKEND ERROR
-
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                    new LoginResponse(
-                            false,
-                            "Google login failed: " + e.getMessage(),
-                            null,
-                            null
-                    )
+                    new LoginResponse(false, "Google login failed: " + e.getMessage(), null, null)
             );
         }
     }
 
     // ==========================
-    // ✅ EMAIL + PASSWORD LOGIN
+    // ✅ GOOGLE REGISTER
     // ==========================
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-
+    @PostMapping("/google-register")
+    public ResponseEntity<LoginResponse> googleRegister(@RequestBody String token) {
         try {
-            boolean success = userService.login(
-                    request.getEmail(),
-                    request.getPassword()
-            );
+            User user = userService.loginWithGoogle(token, true);
+            String jwt = jwtUtil.generateToken(user);
 
-            if (!success) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                        new LoginResponse(
-                                false,
-                                "Invalid credentials",
-                                null,
-                                null
-                        )
-                );
-            }
-
-            User user = userService.getByEmail(request.getEmail());
-
-            String roleForJwt = user.getRole()
-                    .name()
-                    .replace("ROLE_", "");
-
-            String token = jwtUtil.generateToken(
-                    user.getEmail(),
-                    roleForJwt
-            );
-
-            return ResponseEntity.ok(
-                    new LoginResponse(
-                            true,
-                            "Login successful",
-                            token,
-                            user
-                    )
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    new LoginResponse(true, "Google registration successful", jwt, user)
             );
 
         } catch (Exception e) {
             e.printStackTrace();
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new LoginResponse(
-                            false,
-                            "Login failed due to server error",
-                            null,
-                            null
-                    )
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    new LoginResponse(false, "Google registration failed: " + e.getMessage(), null, null)
             );
         }
     }
