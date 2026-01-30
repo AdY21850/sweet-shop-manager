@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://sweet-shop-manager-jaq3.onrender.com", // ONLY ONCE
+  baseURL: "https://sweet-e8ar.onrender.com", // ONLY ONCE
   withCredentials: true,
 });
 
